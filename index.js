@@ -30,6 +30,7 @@ async function run() {
     await client.connect();
 
     const servicesCollection = client.db("carDoctorDB").collection("servicesDB")
+    const bookingCollection = client.db("carDoctorDB").collection("bookingDB")
 
     app.get('/services',async(req,res)=>{
         const cursor = servicesCollection.find()
@@ -41,11 +42,26 @@ async function run() {
          const query = { _id: new ObjectId(id)};
          const options = {
             // Include only the `title` and `imdb` fields in the returned document
-            projection: {  title: 1, price: 1 },
+            projection: {  title: 1, price: 1 ,img:1},
           };
          const result = await servicesCollection.findOne(query,options)
          res.send(result)
 
+    })
+
+    app.get('/bookings',async(req,res)=>{
+        let query = {}
+        if(req.query?.email){
+            query ={email: req.query.email}
+        }
+        const result = await bookingCollection.find(query).toArray()
+        res.send(result)
+    })
+
+    app.post('/bookings',async(req,res)=>{
+        const booking = req.body
+        const result = await bookingCollection.insertOne(booking);
+        res.send(result)
     })
 
     const carDoctorDB =
